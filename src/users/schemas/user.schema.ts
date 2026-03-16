@@ -4,19 +4,34 @@ import { HydratedDocument } from 'mongoose';
 export type UserDocument = HydratedDocument<User>;
 
 @Schema()
-export class User{
+export class User {
 
     @Prop()
     name!: string;
 
     @Prop({ unique: true, required: true })
     email!: string;
-    
-    @Prop()
-    password!: string;
+
+    @Prop({ required: false })
+    password?: string;
 
     @Prop({ default: 'user' })
     role!: string;
+
+    @Prop({ default: 'local' })
+    authProvider!: string;
+
+    @Prop({ required: false })
+    githubId?: string;
+
+    @Prop({ required: false })
+    githubAccessToken?: string;
+
+    @Prop({ required: false })
+    githubUsername?: string;
+
+    @Prop({ required: false })
+    avatarUrl?: string;
 
 }
 

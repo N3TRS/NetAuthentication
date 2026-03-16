@@ -16,5 +16,13 @@ export class UsersService {
 
   async findByEmail(email: string) {
     return await this.userModel.findOne({ email });
-}
+  }
+
+  async findByGithubId(githubId: string) {
+    return await this.userModel.findOne({ githubId });
+  }
+
+  async updateGithubInfo(userId: string, data: { githubAccessToken?: string; githubUsername?: string; avatarUrl?: string }) {
+    return await this.userModel.findByIdAndUpdate(userId, data, { new: true });
+  }
 }
