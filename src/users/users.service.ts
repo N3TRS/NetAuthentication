@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -29,7 +29,7 @@ export class UsersService {
   async getGithubRepos(email: string) {
     const user = await this.findByEmail(email);
     if (!user || !user.githubAccessToken) {
-      throw new NotFoundException('Usuario No Encontrado o Token de GitHub No Disponible');
+      throw new NotFoundException('Usuario sin Repositorios Existentes o Token de GitHub No Disponible');
     }
 
     const response = await fetch('https://api.github.com/user/repos?per_page=100', {
@@ -38,6 +38,11 @@ export class UsersService {
         Accept: 'application/vnd.github+json',
       },
     });
+
+    if (!response.ok) {
+      throw new InternalServerErrorException('Error al obtener repositorios de GitHub');
+    }
+
     return response.json();
   }
 }

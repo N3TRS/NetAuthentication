@@ -28,7 +28,7 @@ export class AuthService {
       role: signUpDto.role ?? 'user',
     });
 
-    const payload = { email: user.email, role: user.role };
+    const payload = { email: user.email, role: user.role, avatarUrl: user.avatarUrl };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -55,7 +55,7 @@ export class AuthService {
       throw new UnauthorizedException('Contraseña Incorrecta');
     }
 
-    const payload = { email: user.email, role: user.role };
+    const payload = { email: user.email, role: user.role, avatarUrl: user.avatarUrl };
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -96,7 +96,7 @@ export class AuthService {
       });
     }
     
-    const payload = { email: user.email, role: user.role };
+    const payload = { email: user.email, role: user.role, avatarUrl: user.avatarUrl };
     const token = await this.jwtService.signAsync(payload);
 
     return {

@@ -33,13 +33,19 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(GithubAuthGuard)
   async githubCallback(@Req() req: any, @Res() res: any) {
-    const result = await this.authService.githubLogin(req.user);
-    //redirige con el JWT como query param cuando se complete el login con GitHub
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-    if (frontendUrl) {
-      return res.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);
+    try {
+      const result = await this.authService.githubLogin(req.user);
+      //redirige con el JWT como query param cuando se complete el login con GitHub
+      if (frontendUrl) {
+        return res.redirect(`${frontendUrl}/auth/callback?token=${result.token}`);
+      }
+      return res.json(result);
+    } catch {
+      if (frontendUrl) {
+        return res.redirect(`${frontendUrl}/login?error=github_auth_failed`);
+      }
+      return res.status(500).json({ message: 'Error al autenticar con GitHub' });
     }
-
-    return res.json(result);
   }
 }
