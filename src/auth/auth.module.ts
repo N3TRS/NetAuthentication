@@ -24,5 +24,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, BcryptService, GithubStrategy],
+  exports: [JwtModule],
 })
 export class AuthModule {}
