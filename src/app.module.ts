@@ -3,7 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { MetricsController } from './metrics.controller';
+import { MetricsController } from './metrics/metrics.controller';
+import { MetricsInterceptor } from './metrics/metrics.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MetricsService } from './metrics/metrics.service';
 
 @Module({
   imports: [
@@ -19,6 +22,12 @@ import { MetricsController } from './metrics.controller';
     UsersModule,
   ],
   controllers: [MetricsController],
-  providers: [],
+  providers: [
+    MetricsService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
+    },
+  ],
 })
 export class AppModule {}
