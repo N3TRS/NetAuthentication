@@ -2,6 +2,8 @@ import { Controller, Post, Get, Body, Req, Res, HttpCode, HttpStatus, UseGuards 
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GithubAuthGuard } from './guards/github-auth.guard';
 import { ConfigService } from '@nestjs/config';
 
@@ -24,6 +26,20 @@ export class AuthController {
   }
 
   
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
+    await this.authService.forgotPassword(dto.email);
+    return { message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: 'Contraseña actualizada correctamente.' };
+  }
+
   @Get('github')
   @UseGuards(GithubAuthGuard)
   githubLogin() {

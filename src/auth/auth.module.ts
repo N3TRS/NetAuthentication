@@ -7,10 +7,12 @@ import { AuthController } from './auth.controller';
 import { BcryptService } from './bcrypt.service';
 import { GithubStrategy } from './strategies/github.strategy';
 import { UsersModule } from '../users/users.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     UsersModule,
+    MailModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
