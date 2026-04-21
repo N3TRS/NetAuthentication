@@ -26,6 +26,34 @@ export class UsersService {
     return await this.userModel.findByIdAndUpdate(userId, data, { new: true });
   }
 
+  async setPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      { passwordResetToken: tokenHash, passwordResetExpires: expiresAt },
+      { new: true },
+    );
+  }
+
+  async findByActiveResetToken(tokenHash: string) {
+    return await this.userModel
+      .findOne({
+        passwordResetToken: tokenHash,
+        passwordResetExpires: { $gt: new Date() },
+      })
+      .select('+passwordResetToken +passwordResetExpires');
+  }
+
+  async updatePasswordAndClearResetToken(userId: string, newHashedPassword: string) {
+    return await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        password: newHashedPassword,
+        $unset: { passwordResetToken: '', passwordResetExpires: '' },
+      },
+      { new: true },
+    );
+  }
+
   async getGithubRepos(email: string) {
     const user = await this.findByEmail(email);
     if (!user || !user.githubAccessToken) {
