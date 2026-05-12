@@ -1,17 +1,55 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { randomBytes, createHash } from 'crypto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from './bcrypt.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
+
+  private readonly logger = new Logger(AuthService.name);
+  private static readonly RESET_TOKEN_TTL_MS = 15 * 60 * 1000;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly bcryptService: BcryptService,
+    private readonly mailService: MailService,
   ) {}
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user || user.authProvider !== 'local') {
+      return;
+    }
+
+    const rawToken = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + AuthService.RESET_TOKEN_TTL_MS);
+
+    await this.usersService.setPasswordResetToken(user._id.toString(), tokenHash, expiresAt);
+
+    try {
+      await this.mailService.sendPasswordReset(user.email, rawToken);
+    } catch (err) {
+      this.logger.error(`No se pudo enviar correo de reset a ${user.email}`, err as Error);
+    }
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const user = await this.usersService.findByActiveResetToken(tokenHash);
+
+    if (!user) {
+      throw new BadRequestException('Token inválido o expirado');
+    }
+
+    const hashedPassword = await this.bcryptService.hash(newPassword);
+    await this.usersService.updatePasswordAndClearResetToken(user._id.toString(), hashedPassword);
+  }
 
   async signUp(signUpDto: SignUpDto): Promise<{ token: string; email: string; role: string }> {
     const existingUser = await this.usersService.findByEmail(signUpDto.email);

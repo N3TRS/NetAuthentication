@@ -33,6 +33,12 @@ export class User {
     @Prop({ required: false })
     avatarUrl?: string;
 
+    @Prop({ required: false, select: false })
+    passwordResetToken?: string;
+
+    @Prop({ required: false, select: false })
+    passwordResetExpires?: Date;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
