@@ -8,11 +8,14 @@ export class MetricsInterceptor implements NestInterceptor {
   constructor(private readonly metricsService: MetricsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-
-    //Tiene el objeto http
     const req = context.switchToHttp().getRequest();
+
+    // Ignora el endpoint /metrics para no auto-monitorearse
+    if (req.path === '/metrics') {
+      return next.handle();
+    }
+
     const end = this.metricsService.httpRequestDuration.startTimer({
-      //Verbos 
       method: req.method,
       route: req.route?.path || req.url,
     });
